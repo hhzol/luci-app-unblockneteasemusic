@@ -13,7 +13,7 @@
 'require ui';
 'require view';
 
-var callServiceList = rpc.declare({
+const callServiceList = rpc.declare({
 	object: 'service',
 	method: 'list',
 	params: ['name'],
@@ -21,8 +21,8 @@ var callServiceList = rpc.declare({
 });
 
 function getServiceStatus() {
-	return L.resolveDefault(callServiceList('unblockneteasemusic'), {}).then(function (res) {
-		var isRunning = false;
+	return L.resolveDefault(callServiceList('unblockneteasemusic'), {}).then(function(res) {
+		let isRunning = false;
 		try {
 			isRunning = res['unblockneteasemusic']['instances']['unblockneteasemusic']['running'];
 		} catch (e) { }
@@ -31,20 +31,19 @@ function getServiceStatus() {
 }
 
 function renderStatus(isRunning) {
-	var spanTemp = '<em><span style="color:%s"><strong>%s %s</strong></span></em>';
-	var renderHTML;
-	if (isRunning) {
+	let spanTemp = '<em><span style="color:%s"><strong>%s %s</strong></span></em>';
+	let renderHTML;
+	if (isRunning)
 		renderHTML = spanTemp.format('green', _('UnblockNeteaseMusic'), _('运行中'));
-	} else {
+	else
 		renderHTML = spanTemp.format('red', _('UnblockNeteaseMusic'), _('未运行'));
-	}
 
 	return renderHTML;
 }
 
 function uploadCertificate(type, filename, ev) {
 	return ui.uploadFile('/usr/share/unblockneteasemusic/' + filename, ev.target)
-	.then(L.bind(function(btn, res) {
+	.then(L.bind((btn, res) => {
 		btn.firstChild.data = _('检查 %s 中...').format(type);
 
 		if (res.size <= 0) {
@@ -54,40 +53,57 @@ function uploadCertificate(type, filename, ev) {
 
 		ui.addNotification(null, E('p', _('您的 %s 已成功上传。大小：%sB。').format(type, res.size)));
 	}, this, ev.target))
-	.catch(function(e) { ui.addNotification(null, E('p', e.message)) })
-	.finally(L.bind(function(btn, input) {
+	.catch((e) => { ui.addNotification(null, E('p', e.message)) })
+	.finally(L.bind((btn, input) => {
 		btn.firstChild.data = _('上传...');
 	}, this, ev.target));
 }
 
 return view.extend({
-	load: function() {
+	load() {
 		return Promise.all([
 			uci.load('unblockneteasemusic'),
 			network.getHostHints()
 		]);
 	},
 
-	render: function(data) {
-		var m, s, o;
-		var hosts = data[1]?.hosts;
+	render(data) {
+		let m, s, o;
+		let hosts = data[1]?.hosts;
 
 		m = new form.Map('unblockneteasemusic', _('解除网易云音乐播放限制'),
 			_('原理：采用 [Bilibili/JOOX/酷狗/酷我/咪咕/pyncmd/QQ/Youtube] 等音源，替换网易云音乐 无版权/收费 歌曲链接<br/>' +
 			'具体使用方法参见：<a href="https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic" target="_blank">GitHub @UnblockNeteaseMusic/luci-app-unblockneteasemusic</a>'));
 
+		if (!L.hasSystemFeature('firewall4')) {
+			s = m.section(form.TypedSection);
+			s.anonymous = true;
+			s.render = function() {
+				this.handleSaveApply = null;
+				this.handleSave = null;
+				this.handleReset = null;
+
+				return E('div', { 'class': 'cbi-section warning' }, [
+					E('h3', {}, _('不支持的防火墙架构')),
+					E('p', {}, _('您可能从错误的来源安装了本插件。请前往本插件的 GitHub 发布页面下载最新版本。'))
+				]);
+			}
+
+			return m.render();
+		}
+
 		s = m.section(form.TypedSection);
 		s.anonymous = true;
-		s.render = function () {
-			poll.add(function () {
-				return L.resolveDefault(getServiceStatus()).then(function (res) {
-					var view = document.getElementById('service_status');
+		s.render = function() {
+			poll.add(() => {
+				return L.resolveDefault(getServiceStatus()).then((res) => {
+					let view = document.getElementById('service_status');
 					view.innerHTML = renderStatus(res);
 				});
 			});
 
 			return E('div', { class: 'cbi-section', id: 'status_bar' }, [
-					E('p', { id: 'service_status' }, _('收集数据中...'))
+				E('p', { id: 'service_status' }, _('收集数据中...'))
 			]);
 		}
 
@@ -193,7 +209,7 @@ return view.extend({
 
 		o = s.option(form.ListValue, 'update_time', '检查更新时间',
 			_('设定每天自动检查更新时间。'));
-		for (var i = 0; i < 24; i++)
+		for (let i = 0; i < 24; i++)
 			o.value(i, i + ':00');
 		o.default = '3';
 		o.depends('auto_update', '1');
@@ -203,15 +219,15 @@ return view.extend({
 		o.inputstyle = 'apply';
 		o.inputtitle = _('下载 ca.crt');
 		o.onclick = function() {
-			return fs.read_direct('/usr/share/unblockneteasemusic/core/ca.crt', 'blob').then(function(blob) {
-				var url = window.URL.createObjectURL(blob);
-				var link = E('a', { 'style': 'display:none', 'href': url, 'download': 'ca.crt' });
+			return fs.read_direct('/usr/share/unblockneteasemusic/core/ca.crt', 'blob').then((blob) => {
+				let url = window.URL.createObjectURL(blob);
+				let link = E('a', { 'style': 'display:none', 'href': url, 'download': 'ca.crt' });
 
 				document.body.appendChild(link);
 				link.click();
 				document.body.removeChild(link);
 				window.URL.revokeObjectURL(url);
-			}).catch(function(err) {
+			}).catch((err) => {
 				ui.addNotification(null, E('p', [ _('下载文件失败：%s。').format(err.message) ]));
 			});
 		}
@@ -253,9 +269,9 @@ return view.extend({
 		o.depends('advanced_mode', '1');
 
 		o = s.option(form.ListValue, 'hijack_ways', _('劫持方法'),
-			 _('如果使用 Hosts 劫持，监听端口将固定为 80/443，请注意更改您的 webUI 端口。'));
+			_('如果使用 Hosts 劫持，监听端口将固定为 80/443，请注意更改您的 webUI 端口。'));
 		o.value('dont_hijack', _('不开启劫持'));
-		o.value('use_ipset', _('使用 IPSet 劫持'));
+		o.value('use_ipset', _('使用 NFTSet 劫持'));
 		o.value('use_hosts', _('使用 Hosts 劫持'));
 		o.default = 'dont_hijack';
 		o.rmempty = false;
@@ -320,8 +336,8 @@ return view.extend({
 
 		o = s.option(form.Value, 'mac_addr', _('MAC 地址'));
 		o.datatype = 'macaddr';
-		Object.keys(hosts).forEach(function(mac) {
-			var hint = hosts[mac].name || L.toArray(hosts[mac].ipaddrs || hosts[mac].ipv4)[0];
+		Object.keys(hosts).forEach((mac) => {
+			let hint = hosts[mac].name || L.toArray(hosts[mac].ipaddrs || hosts[mac].ipv4)[0];
 			o.value(mac, hint ? '%s (%s)'.format(mac, hint) : mac);
 		});
 		o.rmempty = false;
