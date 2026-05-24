@@ -204,11 +204,11 @@ return view.extend({
 		o.value('svip', _('SVIP'));
 
 		o = s.option(form.Flag, 'auto_update', _('启用自动更新'),
-			_('启用后，①每天将定时自动检查最新核心版本并更新，②每小时刷新一次NFTSET的IP列表'));
+			_('启用后，①每天定时检查核心,有新版本将自动更新，②每小时刷新一次NFTSET的IP列表'));
 		o.default = o.disabled;
 
-		o = s.option(form.ListValue, 'update_time', '检查更新时间',
-			_('设定每天自动检查更新时间。'));
+		o = s.option(form.ListValue, 'update_time', '最新核心版本检查时间',
+			_('设定最新核心版本检查时间。'));
 		for (let i = 0; i < 24; i++)
 			o.value(i, i + ':00');
 		o.default = '3';
