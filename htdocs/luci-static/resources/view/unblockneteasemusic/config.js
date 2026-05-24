@@ -204,7 +204,7 @@ return view.extend({
 		o.value('svip', _('SVIP'));
 
 		o = s.option(form.Flag, 'auto_update', _('启用自动更新'),
-			_('启用后，每天将定时自动检查最新核心版本并更新。'));
+			_('启用后，①每天将定时自动检查最新核心版本并更新，②每小时刷新一次NFTSET的IP列表'));
 		o.default = o.disabled;
 
 		o = s.option(form.ListValue, 'update_time', '检查更新时间',
