@@ -79,10 +79,12 @@ start_service() {
 	is_enabled "config" "enable" || return 1
 
 	local update_time
+	local refresh_interval
 	config_get update_time "config" "update_time" "3"
+	config_get refresh_interval "config" "refresh_interval" "60"
 	sed -i "/$NAME/d" /etc/crontabs/root
 	! is_enabled "config" "auto_update" || echo -e "0 ${update_time} * * * $UNM_DIR/update.sh update_core" >> "/etc/crontabs/root"
-	! is_enabled "config" "auto_update" || echo -e "0 * * * * $UNM_DIR/refresh_ip.sh" >> "/etc/crontabs/root"
+	! is_enabled "config" "refresh_ip" || echo -e "*/${refresh_interval} * * * * $UNM_DIR/update.sh refresh_ip" >> "/etc/crontabs/root"
 	/etc/init.d/cron restart
 
 	mkdir -p "$RUN_DIR"
