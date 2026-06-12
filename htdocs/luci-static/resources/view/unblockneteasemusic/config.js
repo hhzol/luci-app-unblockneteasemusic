@@ -214,6 +214,21 @@ return view.extend({
 		o.default = '3';
 		o.depends('auto_update', '1');
 
+		// 添加自动刷新 IP 开关
+		o = s.option(form.Flag, 'refresh_ip', _('启用自动更新IP'),
+			_('启用后，将按设定时间间隔自动刷新 NFTSET 的 IP 列表'));
+		o.default = o.disabled;
+
+		// 添加更新时间间隔下拉框
+		o = s.option(form.ListValue, 'refresh_interval', _('更新时间间隔'),
+			_('选择刷新 IP 列表的时间间隔'));
+		o.value('30', _('30分钟'));
+		o.value('60', _('1小时'));
+		o.value('90', _('1小时30分钟'));
+		o.value('120', _('2小时'));
+		o.default = '60';   // 默认 1 小时
+		o.depends('refresh_ip', '1');
+
 		o = s.option(form.Button, '_download_cert', _('CA 根证书'),
 			_('Linux / iOS / MacOSX 在信任根证书后方可正常使用。'));
 		o.inputstyle = 'apply';
