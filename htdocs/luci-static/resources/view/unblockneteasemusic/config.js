@@ -203,7 +203,7 @@ return view.extend({
 		o.value('cvip', _('CVIP'));
 		o.value('svip', _('SVIP'));
 
-		o = s.option(form.Flag, 'auto_update', _('启用自动更新'),
+		o = s.option(form.Flag, 'auto_update', _('启用自动更新核心'),
 			_('启用后，每天将定时自动检查最新核心版本并更新。'));
 		o.default = o.disabled;
 
