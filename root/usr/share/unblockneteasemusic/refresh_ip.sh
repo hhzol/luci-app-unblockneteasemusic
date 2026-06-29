@@ -28,7 +28,9 @@ if [ -n "$IPV4_LIST" ]; then
     echo "$(date) [DEBUG] IPv4 list: $IPV4_LIST" >> "$LOG"
     # Flush and refill set
     nft flush set inet fw4 neteasemusic 2>/dev/null
-    nft add element inet fw4 neteasemusic { $IPV4_LIST } 2>/dev/null
+    for ip in $IPV4_LIST; do
+        nft add element inet fw4 neteasemusic { $ip } 2>&1 | grep -v "exists" >> "$LOG"
+    done
     COUNT_IPV4=$(echo $IPV4_LIST | wc -w)
     echo "$(date) [SUCCESS] Updated neteasemusic set with $COUNT_IPV4 IPv4 addresses" >> "$LOG"
 else
@@ -41,7 +43,9 @@ IPV6_LIST=$(echo "$NETEASE_JSON" | jsonfilter -e '@.data.*.ipv6.*' 2>/dev/null |
 if [ -n "$IPV6_LIST" ]; then
     echo "$(date) [DEBUG] IPv6 list: $IPV6_LIST" >> "$LOG"
     nft flush set inet fw4 neteasemusic6 2>/dev/null
-    nft add element inet fw4 neteasemusic6 { $IPV6_LIST } 2>/dev/null
+    for ip in $IPV6_LIST; do
+        nft add element inet fw4 neteasemusic6 { $ip } 2>&1 | grep -v "exists" >> "$LOG"
+    done
     COUNT_IPV6=$(echo $IPV6_LIST | wc -w)
     echo "$(date) [SUCCESS] Updated neteasemusic6 set with $COUNT_IPV6 IPv6 addresses" >> "$LOG"
 else
